@@ -28,6 +28,8 @@ class CapriApplication : Application() {
     lateinit var voice: VoiceController; private set
     lateinit var qwen: QwenVoice; private set
     lateinit var contextual: ContextController; private set
+    lateinit var personalMemory: com.capri.companion.data.PersonalMemoryController
+    private set
     lateinit var chatgpt: com.capri.companion.auth.ChatGptConnection; private set
     lateinit var brain: BrainClient; private set
     val settings = MutableStateFlow(CapriSettings())
@@ -59,6 +61,15 @@ class CapriApplication : Application() {
         qwen = QwenVoice(this, scope)
         voice = VoiceController(this, scope, { speaking.value = it; if (!it) initiativeSpeaking.value = false }, { notice.value = it }, qwen, { amplitude.value = it })
         contextual = ContextController(this)
+        personalMemory = com.capri.companion.data.PersonalMemoryController(this)
+
+scope.launch {
+    try {
+        personalMemory.refresh()
+    } catch (e: Exception) {
+        notice.value = "No se pudo cargar la memoria personal: ${e.message}"
+    }
+}
         qwen.installBundled()
         cacheDir.listFiles()?.filter { it.name.startsWith("capri-") && it.extension == "mp3" }?.forEach { it.delete() }
     }

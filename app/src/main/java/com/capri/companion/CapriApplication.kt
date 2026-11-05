@@ -89,7 +89,34 @@ scope.launch {
             try {
                 persist()
                 val shared = contextual.snapshot.value?.takeIf { contextual.contextForChat() != null }
-                val response = brain.reply(config, messages.value, shared?.json(), contextual.memoryForChat())
+                val personal = personalMemory.memories.value
+val personalJson = org.json.JSONArray().apply {
+    personal.sortedByDescending { it.updatedAt }
+        .take(20)
+        .forEach { memory ->
+            put(
+                org.json.JSONObject()
+                    .put("category", memory.category)
+                    .put("content", memory.content)
+                    .put("updatedAt", memory.updatedAt)
+            )
+        }
+}
+
+val activityJson = contextual.memoryForChat()
+val memoryPayload = org.json.JSONObject()
+    .put("personal", personalJson)
+    .put("activities", activityJson?.let {
+        org.json.JSONArray(it)
+    } ?: org.json.JSONArray())
+    .toString()
+
+val response = brain.reply(
+    config,
+    messages.value,
+    shared?.json(),
+    memoryPayload
+)
                 if (shared != null && (contextual.snapshot.value?.session != shared.session || !contextual.state.value.active)) {
                     notice.value = "La sesión de pantalla terminó antes de recibir la respuesta. Volvé a preguntar para conversar sin ese contexto."
                     return@launch

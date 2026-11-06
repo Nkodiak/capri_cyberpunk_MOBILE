@@ -177,7 +177,7 @@ class VoiceController(
                                     offset += written
                                     totalWritten += written
 
-                                    if (!played) {
+                                    if (!played && totalWritten >= chunk.sampleRate / 4) {
                                         synchronized(audioGuard) {
                                             if (token == generation) {
                                                 audio!!.play()
@@ -206,6 +206,17 @@ class VoiceController(
                                         if (token == generation) onAmplitude(level)
                                     }
                                 }
+                            }
+                            
+                            if (!played && totalWritten > 0L && token == generation) {
+    synchronized(audioGuard) {
+        if (!played && token == generation && audio != null) {
+            audio!!.play()
+            played = true
+            preparing.value = false
+            onSpeaking(true)
+        }
+    }
                             }
 
                             val currentAudio = audio

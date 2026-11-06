@@ -294,7 +294,7 @@ class VoiceController(
                     if (token == generation) {
                         onError(e.message ?: "Qwen no pudo hablar.")
                     }
-                } finally {
+                                } finally {
                     channel.cancel()
                     writer?.cancel()
                     writer?.join()
@@ -308,7 +308,8 @@ class VoiceController(
                     }
                 }
             }
-            return
+        }
+        return
         }
 
         if (settings.voiceMode == VoiceMode.SYSTEM) {

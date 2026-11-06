@@ -275,7 +275,7 @@ class VoiceController(
                         val finalSamples = processor.finish()
                         if (finalSamples.isNotEmpty()) {
                             channel.send(
-                                AudioChunk(finalSamples, audio?.sampleRate ?: 24000)
+                                AudioChunk(finalSamples, streamSampleRate)
                             )
                         }
                     }

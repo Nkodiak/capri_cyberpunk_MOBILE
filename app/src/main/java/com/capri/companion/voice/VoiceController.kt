@@ -18,6 +18,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.joinAll
@@ -92,6 +93,7 @@ class VoiceController(
             val token = generation
 
             job = scope.launch {
+    coroutineScope {
                 val channel = Channel<AudioChunk>(capacity = 4)
                 var writer: Job? = null
                 var audio: AudioTrack? = null
@@ -102,7 +104,7 @@ class VoiceController(
                     val processorHolder =
                         arrayOfNulls<QwenVoiceEffects.StreamProcessor>(1)
 
-                    writer = scope.launch(Dispatchers.IO) {
+                    writer = launch(Dispatchers.IO) {
                         try {
                             for (chunk in channel) {
                                 currentCoroutineContext().ensureActive()

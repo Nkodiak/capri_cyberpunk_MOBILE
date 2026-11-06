@@ -487,7 +487,6 @@ class VoiceController(
                 runCatching {
                     it.pause()
                     it.flush()
-                    it.release()
                 }
             }
             track = null

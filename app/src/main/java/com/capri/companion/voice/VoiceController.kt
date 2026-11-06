@@ -236,11 +236,13 @@ class VoiceController(
                     }
 
                     val processorRef = arrayOfNulls<QwenVoiceEffects.StreamProcessor>(1)
+                    var streamSampleRate = 24000
 
                     qwen.stream(clean, onAudio = { samples, sampleRate ->
                         if (token != generation) {
                             false
                         } else {
+                            streamSampleRate = sampleRate
                             try {
                                 var processor = processorRef[0]
 

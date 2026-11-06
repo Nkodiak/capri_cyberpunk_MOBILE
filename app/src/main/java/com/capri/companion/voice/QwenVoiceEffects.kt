@@ -90,4 +90,28 @@ object QwenVoiceEffects {
             return output.toFloatArray()
         }
     }
+fun finish(): FloatArray {
+    val output = ArrayList<Float>(1)
+    val last = previousSample ?: return FloatArray(0)
+
+    while (inputPosition < 1.0) {
+        val metallic = last * (
+            (1 - wet) +
+                wet * cos(2 * PI * 85 * outputIndex / rate)
+        )
+
+        val digital = if (wet > 0) {
+            metallic * .94 +
+                round(metallic * 2048) / 2048 * .06
+        } else {
+            metallic
+        }
+
+        output.add(digital.toFloat().coerceIn(-1f, 1f))
+        inputPosition += tempo
+        outputIndex++
+    }
+
+    previousSample = null
+    return output.toFloatArray()
 }

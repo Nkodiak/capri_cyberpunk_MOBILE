@@ -101,9 +101,7 @@ class VoiceController(
                 var totalWritten = 0L
 
                 try {
-                    val processorHolder =
-                        arrayOfNulls<QwenVoiceEffects.StreamProcessor>(1)
-
+                    
                     writer = launch(Dispatchers.IO) {
                         try {
                             for (chunk in channel) {

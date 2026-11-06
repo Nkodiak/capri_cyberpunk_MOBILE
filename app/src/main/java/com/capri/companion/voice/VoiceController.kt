@@ -504,22 +504,3 @@ class VoiceController(
         onAmplitude(-1f)
     }
 }
-del sistema no está disponible.") }
-    }
-
-    fun stop() {
-        synchronized(audioGuard) {
-            generation++
-            track?.let { runCatching { it.pause(); it.flush(); it.release() } }; track = null
-        }
-        preparing.value = false
-        qwen.cancel()
-        pending = null
-        job?.cancel(); job = null
-        tts?.stop()
-        player?.release(); player = null
-        audioFile?.delete(); audioFile = null
-        onSpeaking(false)
-        onAmplitude(-1f)
-    }
-}

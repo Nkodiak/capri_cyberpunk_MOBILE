@@ -222,15 +222,16 @@ class VoiceController(
                             }
                         } finally {
                             synchronized(audioGuard) {
-                                audio?.let {
-                                    runCatching {
-                                        if (it.playState == AudioTrack.PLAYSTATE_PLAYING) {
-                                            it.stop()
-                                        }
-                                        it.release()
-                                    }
-                                }
-                                if (track === audio) track = null
+    val current = audio
+    if (current != null) {
+        runCatching {
+            if (current.playState == AudioTrack.PLAYSTATE_PLAYING) {
+                current.stop()
+            }
+            current.release()
+        }
+        if (track === current) track = null
+    }
                             }
                         }
                     }

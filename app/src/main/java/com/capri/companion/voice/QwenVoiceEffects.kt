@@ -10,15 +10,27 @@ import kotlin.math.round
 object QwenVoiceEffects {
 
     fun apply(
-        input: FloatArray,
-        sampleRate: Int,
-        speed: Float,
-        robotic: Float
-    ): FloatArray {
-        val processor = StreamProcessor(sampleRate, speed, robotic)
-        val first = processor.process(input)
-        val last = processor.finish()
-        return first + last
+    fun apply(
+    input: FloatArray,
+    sampleRate: Int,
+    speed: Float,
+    robotic: Float
+): FloatArray {
+    val tempo = speed.takeIf { it.isFinite() }
+        ?.coerceIn(1f, 1.2f) ?: 1.08f
+
+    val processor = StreamProcessor(sampleRate, speed, robotic)
+    val first = processor.process(input)
+    val last = processor.finish()
+    val result = first + last
+
+    val expectedSize = (input.size / tempo).toInt()
+
+    return if (result.size > expectedSize) {
+        result.copyOf(expectedSize)
+    } else {
+        result
+     }
     }
 
     class StreamProcessor(

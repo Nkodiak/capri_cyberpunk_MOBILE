@@ -6,7 +6,6 @@ import kotlin.math.round
 
 /**
  * Procesa audio Qwen conservando la posición entre bloques.
- * Los parámetros y el algoritmo original se mantienen.
  */
 object QwenVoiceEffects {
 
@@ -17,7 +16,9 @@ object QwenVoiceEffects {
         robotic: Float
     ): FloatArray {
         val processor = StreamProcessor(sampleRate, speed, robotic)
-        return processor.process(input)
+        val first = processor.process(input)
+        val last = processor.finish()
+        return first + last
     }
 
     class StreamProcessor(
@@ -26,7 +27,9 @@ object QwenVoiceEffects {
         robotic: Float
     ) {
         private val rate = sampleRate.also {
-            require(it in 8000..96000) { "Frecuencia de audio inválida." }
+            require(it in 8000..96000) {
+                "Frecuencia de audio inválida."
+            }
         }
 
         private val tempo =
@@ -57,10 +60,10 @@ object QwenVoiceEffects {
                 (source.size / tempo).toInt() + 2
             )
 
-            val offset = if (previousSample != null) 1 else 0
-
             while (inputPosition < source.size - 1) {
-                val left = inputPosition.toInt().coerceIn(0, source.lastIndex)
+                val left = inputPosition.toInt()
+                    .coerceIn(0, source.lastIndex)
+
                 val right = (left + 1).coerceAtMost(source.lastIndex)
                 val fraction = inputPosition - left
 
@@ -70,7 +73,7 @@ object QwenVoiceEffects {
                 val metallic = dry * (
                     (1 - wet) +
                         wet * cos(2 * PI * 85 * outputIndex / rate)
-                    )
+                )
 
                 val digital = if (wet > 0) {
                     metallic * .94 +
@@ -87,58 +90,34 @@ object QwenVoiceEffects {
 
             previousSample = source.last()
             inputPosition -= source.size - 1
+
             return output.toFloatArray()
         }
-    }
-fun finish(): FloatArray {
-    val output = ArrayList<Float>(1)
-    val last = previousSample ?: return FloatArray(0)
 
-    while (inputPosition < 1.0) {
-        val metallic = last * (
-            (1 - wet) +
-                wet * cos(2 * PI * 85 * outputIndex / rate)
-        )
+        fun finish(): FloatArray {
+            val output = ArrayList<Float>(1)
+            val last = previousSample ?: return FloatArray(0)
 
-        val digital = if (wet > 0) {
-            metallic * .94 +
-                round(metallic * 2048) / 2048 * .06
-        } else {
-            metallic
+            while (inputPosition < 1.0) {
+                val metallic = last * (
+                    (1 - wet) +
+                        wet * cos(2 * PI * 85 * outputIndex / rate)
+                )
+
+                val digital = if (wet > 0) {
+                    metallic * .94 +
+                        round(metallic * 2048) / 2048 * .06
+                } else {
+                    metallic
+                }
+
+                output.add(digital.toFloat().coerceIn(-1f, 1f))
+                inputPosition += tempo
+                outputIndex++
+            }
+
+            previousSample = null
+            return output.toFloatArray()
         }
-
-        output.add(digital.toFloat().coerceIn(-1f, 1f))
-        inputPosition += tempo
-        outputIndex++
-    }
-
-    previousSample = null
-    return output.toFloatArray()
-}
-fun finish(): FloatArray {
-    val output = ArrayList<Float>(1)
-    val last = previousSample ?: return FloatArray(0)
-
-    while (inputPosition < 1.0) {
-        val metallic = last * (
-            (1 - wet) +
-                wet * cos(2 * PI * 85 * outputIndex / rate)
-        )
-
-        val digital = if (wet > 0) {
-            metallic * .94 +
-                round(metallic * 2048) / 2048 * .06
-        } else {
-            metallic
-        }
-
-        output.add(digital.toFloat().coerceIn(-1f, 1f))
-        inputPosition += tempo
-        outputIndex++
-    }
-
-    previousSample = null
-    return output.toFloatArray()
-}  
     }
 }

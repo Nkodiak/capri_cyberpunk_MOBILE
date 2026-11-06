@@ -440,7 +440,7 @@ fun CapriScreen(app: CapriApplication, tab: Int, onTab: (Int) -> Unit,
     if (state.working && !state.installed) LinearProgressIndicator(progress = { state.progress }, modifier = Modifier.fillMaxWidth(), color = Cyan)
     if (metrics.cached) Text("Respuesta disponible en memoria para repetir.", color = Cyan, fontSize = 11.sp)
     else if (metrics.firstAudioMs > 0) Text("Preparación: ${"%.1f".format(metrics.firstAudioMs / 1000.0)} s", color = Muted, fontSize = 11.sp)
-    CapriButton("PREPARAR VOZ", { app.qwen.warmUp() }, Modifier.fillMaxWidth(), enabled = state.installed && !state.working)
+    CapriButton("PREPARAR VOZ", { app.qwen.downloadModels() }, Modifier.fillMaxWidth(), enabled = state.installed && !state.working)
 }
 
 @Composable private fun Environment(app: CapriApplication, onShare: () -> Unit, onStop: () -> Unit, onShow: () -> Unit) {

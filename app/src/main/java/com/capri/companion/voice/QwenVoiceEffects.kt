@@ -10,7 +10,6 @@ import kotlin.math.round
 object QwenVoiceEffects {
 
     fun apply(
-    fun apply(
     input: FloatArray,
     sampleRate: Int,
     speed: Float,
